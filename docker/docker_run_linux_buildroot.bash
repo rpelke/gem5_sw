@@ -26,7 +26,7 @@ $CONTAINER_PROGRAM run \
 	-it \
     $CONTAINER_PROGRAM_FLAGS \
 	-v "$BUILDROOT_DIR":/app/buildroot:Z \
-	-v "$BOOTCODE_DIR":/app/bootcode:ro,Z \
+	-v "$BOOTCODE_DIR":/app/bootcode:Z \
 	-v "$IMAGES_DIR":/app/images:Z \
 	-v "$CONFIG_DIR":/app/config:Z \
 	-v "$BUILD_DIR":/app/build:Z \

@@ -10,7 +10,7 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 
 BUILDROOT_DIR="$DIR/../buildroot"
-BOOTCODE_DIR="$DIR/../linux_bootcode"
+BOOTCODE_DIR="$DIR/../bootcode"
 IMAGES_DIR="$DIR/../images"
 CONFIG_DIR="$DIR/../config"
 BUILD_DIR="$DIR/../BUILD"

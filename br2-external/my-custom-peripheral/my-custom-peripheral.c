@@ -15,12 +15,12 @@ MODULE_VERSION("1.0");
  * removed (my_custom_peripheral_remove) and bound to this driver
  */
 static int my_custom_peripheral_probe(struct platform_device *pdev) {
-  dev_info(&pdev->dev, "device initialized\n");
-  return 0;
+    dev_info(&pdev->dev, "device initialized\n");
+    return 0;
 }
 
 static void my_custom_peripheral_remove(struct platform_device *pdev) {
-  dev_info(&pdev->dev, "device removed\n");
+    dev_info(&pdev->dev, "device removed\n");
 }
 
 static const struct of_device_id my_custom_peripheral_of_match[] = {
@@ -42,29 +42,70 @@ static struct platform_driver my_custom_peripheral_driver = {
  * Called when the module is loaded (registers the driver) or unloaded
  * (unregisters the driver)
  */
-dev_t dev = 0;
+static dev_t dev_num;
+static struct class *dev_class;
+
+const char *driver_name = "my_custom_peripheral";
+const char *class_name = "my_custom_peripheral";
+const char *device_name = "my_custom_peripheral";
 
 static int __init my_driver_init(void) {
-  pr_info("INIT my_custom_peripheral driver\n");
+    int ret;
+    struct device *dev_ret;
 
-  /*Allocating Major number*/
-  if ((alloc_chrdev_region(&dev, 0, 1, "my_custom_peripheral")) < 0) {
-    printk(KERN_INFO "Cannot allocate major number for device 1\n");
-    return -1;
-  }
-  printk(KERN_INFO "Major = %d Minor = %d \n", MAJOR(dev), MINOR(dev));
-  printk(KERN_INFO "Kernel Module Inserted Successfully...\n");
+    pr_info("INIT my_custom_peripheral driver\n");
 
-  return platform_driver_register(&my_custom_peripheral_driver);
+    /* Allocate device numbers (adds entry to /proc/devices) */
+    ret = alloc_chrdev_region(&dev_num, 0, 1, driver_name);
+    if (ret < 0) {
+        pr_err("Cannot allocate device numbers\n");
+        goto err_alloc_chrdev;
+    }
+    pr_info("Major = %d Minor = %d\n", MAJOR(dev_num), MINOR(dev_num));
+
+    /* Create device class (creates /sys/class/<class_name>/)*/
+    dev_class = class_create(class_name);
+    if (IS_ERR(dev_class)) {
+        ret = PTR_ERR(dev_class);
+        goto err_class_create;
+    }
+
+    /* Create device (creates /sys/class/<class_name>/<device_name>/
+     * and triggers creation of /dev/<device_name> via udev)*/
+    dev_ret = device_create(dev_class, NULL, dev_num, NULL, device_name);
+    if (IS_ERR(dev_ret)) {
+        ret = PTR_ERR(dev_ret);
+        goto err_device_create;
+    }
+
+    /* Register platform driver */
+    ret = platform_driver_register(&my_custom_peripheral_driver);
+    if (ret) {
+        goto err_platform_register;
+    }
+
+    pr_info("Driver initialized successfully\n");
+    return 0;
+
+err_platform_register:
+    device_destroy(dev_class, dev_num);
+err_device_create:
+    class_destroy(dev_class);
+err_class_create:
+    unregister_chrdev_region(dev_num, 1);
+err_alloc_chrdev:
+    return ret;
 }
 
 static void __exit my_driver_exit(void) {
-  pr_info("EXIT my_custom_peripheral driver\n");
+    pr_info("EXIT my_custom_peripheral driver\n");
 
-  unregister_chrdev_region(dev, 1);
-  printk(KERN_INFO "Kernel Module Removed Successfully...\n");
+    platform_driver_unregister(&my_custom_peripheral_driver);
+    device_destroy(dev_class, dev_num);
+    class_destroy(dev_class);
+    unregister_chrdev_region(dev_num, 1);
 
-  platform_driver_unregister(&my_custom_peripheral_driver);
+    pr_info("Driver removed successfully\n");
 }
 
 module_init(my_driver_init);

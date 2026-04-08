@@ -228,7 +228,7 @@
 
 	my-custom-peripheral@1c150000 {
 		compatible = "gem5,my-custom-peripheral";
-		reg = <0x0 0x1c150000 0x0 0x4>;
+		reg = <0x0 0x1c150000 0x0 0x8>;
 		status = "okay";
 	};
 

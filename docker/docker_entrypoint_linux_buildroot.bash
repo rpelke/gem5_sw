@@ -2,6 +2,7 @@
 set -euo pipefail
 
 export BR2_DEFCONFIG=/app/config/buildroot-config
+export BR2_EXTERNAL=/app/br2-external/my-custom-peripheral
 
 if [ "$1" == "build" ]; then
 	echo "Building Linux buildroot"

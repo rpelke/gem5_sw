@@ -1,4 +1,6 @@
 # Gem5 – AArch64 Linux Image
+Software for a gem5-based full-system simulation.
+The corresponding gem5 VP is [gem5-sim](https://github.com/rpelke/gem5-sim).
 
 ## Build & Install
 1. Clone the repository including submodules:

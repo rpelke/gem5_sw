@@ -15,6 +15,7 @@ IMAGES_DIR="$DIR/../images"
 CONFIG_DIR="$DIR/../config"
 BUILD_DIR="$DIR/../BUILD"
 OVERLAY_DIR="$DIR/../overlay"
+EXTERNAL_DIR="$DIR/../br2-external"
 
 mkdir -p "${BUILD_DIR}"
 mkdir -p "${IMAGES_DIR}"
@@ -31,5 +32,6 @@ $CONTAINER_PROGRAM run \
 	-v "$CONFIG_DIR":/app/config:Z \
 	-v "$BUILD_DIR":/app/build:Z \
 	-v "$OVERLAY_DIR":/app/overlay:ro,Z \
+	-v "$EXTERNAL_DIR":/app/br2-external:ro,Z \
 	-v "$DIR/docker_entrypoint_linux_buildroot.bash":/app/docker_entrypoint.bash:ro,Z \
 	gem5_linux_buildroot "$1"

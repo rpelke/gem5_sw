@@ -1,4 +1,4 @@
-obj-m += my-custom-peripheral.o
+obj-m += linear_function_accelerator.o
 
 all:
 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules

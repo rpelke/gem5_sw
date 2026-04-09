@@ -1,5 +1,5 @@
-config BR2_PACKAGE_MY_CUSTOM_PERIPHERAL
-    bool "my-custom-peripheral"
+config BR2_PACKAGE_LINEAR_FUNCTION_ACCELERATOR
+  bool "linear_function_accelerator"
     depends on BR2_LINUX_KERNEL
     help
       Kernel driver for a custom peripheral.

@@ -226,9 +226,9 @@
 		compatible = "virtio,mmio";
 	};
 
-	my-custom-peripheral@1c150000 {
-		compatible = "gem5,my-custom-peripheral";
-		reg = <0x0 0x1c150000 0x0 0x8>;
+	linear_function_accelerator@1c150000 {
+		compatible = "gem5,linear_function_accelerator";
+		reg = <0x0 0x1c150000 0x0 0x30>;
 		status = "okay";
 	};
 

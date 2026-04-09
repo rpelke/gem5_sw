@@ -2,13 +2,13 @@
 set -euo pipefail
 
 export BR2_DEFCONFIG=/app/config/buildroot-config
-export BR2_EXTERNAL=/app/br2-external/my-custom-peripheral
+export BR2_EXTERNAL=/app/br2-external/linear_function_accelerator
 
 if [ "$1" == "build" ]; then
 	echo "Building Linux buildroot"
 
     # Delete previous custom model
-    rm -rf /app/build/buildroot/output/linux/build/my-custom-peripheral*
+	rm -rf /app/build/buildroot/output/linux/build/my-custom-peripheral* /app/build/buildroot/output/linux/build/linear_function_accelerator*
 
 	# Build the Linux system and copy the kernel and root filesystem to the images directory.
 	mkdir -p /app/images/system/binaries

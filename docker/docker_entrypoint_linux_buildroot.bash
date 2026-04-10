@@ -17,6 +17,9 @@ if [ "$1" == "build" ]; then
 	cp /app/build/buildroot/output/linux/images/vmlinux /app/images/system/binaries/
 	cp /app/build/buildroot/output/linux/images/rootfs.ext2 /app/images/system/binaries/
 
+elif [ "$1" == "build-toolchain" ]; then
+    echo "Building toolchain"
+    mkdir -p /app/images
 	# Build the SDK and copy it to the images directory.
 	# This is necessary for building the aarch64 bootcode later, since the bootcode depends on the toolchain provided by the SDK.
 	make O=/app/build/buildroot/output/linux -C /app/buildroot/ sdk

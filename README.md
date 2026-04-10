@@ -20,6 +20,11 @@ If you want to change the configuration(s), use:
     ./scripts/build_image.bash
     ```
 
+1. Build the toolchain:
+    ```bash
+    ./scripts/build_toolchain.bash
+    ```
+
 1. Build the bootcode and device tree:
     ```bash
     ./scripts/build_bootcode.bash

@@ -2,16 +2,18 @@
 
 #include <linux/cdev.h>
 #include <linux/device.h>
+#include <linux/errno.h>
 #include <linux/fs.h>
 #include <linux/idr.h>
 #include <linux/kdev_t.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/mutex.h>
+#include <linux/slab.h>
 
 static dev_t lfa_base_dev_num;
-static struct class *dev_class;
-static bool chrdev_region_allocated;
+static struct class *dev_class = NULL;
+static bool chrdev_region_allocated = false;
 
 /* ID allocator for minor numbers */
 static DEFINE_IDA(lfa_minors);
@@ -30,10 +32,28 @@ static int lfa_open(struct inode *inode, struct file *file) {
     struct lfa_device_data *data =
         container_of(inode->i_cdev, struct lfa_device_data, lfa_cdev);
 
+    /* Allow only one open file at a time */
     if (atomic_inc_return(&data->open_count) > 1) {
         atomic_dec(&data->open_count);
         return -EBUSY;
     }
+
+    /* Allocate input and output buffers */
+    data->input_buffer = kmalloc(INPUT_BUFFER_SIZE, GFP_KERNEL);
+    if (!data->input_buffer) {
+        atomic_dec(&data->open_count);
+        return -ENOMEM;
+    }
+    data->output_buffer = kmalloc(OUTPUT_BUFFER_SIZE, GFP_KERNEL);
+    if (!data->output_buffer) {
+        kfree(data->input_buffer);
+        atomic_dec(&data->open_count);
+        return -ENOMEM;
+    }
+
+    /* Store data ptr in file private data for read/write function */
+    file->private_data = data;
+
     return 0;
 }
 
@@ -41,17 +61,56 @@ static int lfa_release(struct inode *inode, struct file *file) {
     struct lfa_device_data *data =
         container_of(inode->i_cdev, struct lfa_device_data, lfa_cdev);
 
+    /* Free input and output buffers */
+    kfree(data->input_buffer);
+    kfree(data->output_buffer);
+
     atomic_dec(&data->open_count);
     return 0;
 }
 
 static ssize_t lfa_read(struct file *filp, char __user *buf, size_t len,
                         loff_t *off) {
-    return 0;
+    /* Check if the read size is as expected */
+    if (len != OUTPUT_BUFFER_SIZE) {
+        pr_warn("lfa ignore input: unexpected read size: %zu (expected %zu)\n",
+                len, OUTPUT_BUFFER_SIZE);
+        return -EINVAL;
+    }
+
+    /* Copy data from device to output buffer */
+    struct lfa_device_data *data = filp->private_data;
+    memcpy_fromio(data->output_buffer,
+                  (u8 __iomem *)data->mmio_base + OUTPUT_REG_OFFSET,
+                  OUTPUT_BUFFER_SIZE);
+
+    /* Copy data from kernel space to user space */
+    if (copy_to_user(buf, data->output_buffer, len)) {
+        return -EFAULT;
+    }
+
+    return len;
 }
 
 static ssize_t lfa_write(struct file *filp, const char __user *buf, size_t len,
                          loff_t *off) {
+    /* Check if the write size is as expected */
+    if (len != INPUT_BUFFER_SIZE) {
+        pr_warn("lfa ignore input: unexpected write size: %zu (expected %zu)\n",
+                len, INPUT_BUFFER_SIZE);
+        return -EINVAL;
+    }
+
+    /* Copy data from user space to kernel space */
+    struct lfa_device_data *data = filp->private_data;
+    if (copy_from_user(data->input_buffer, buf, len)) {
+        return -EFAULT;
+    }
+
+    /* Copy data into device */
+    memcpy_toio((u8 __iomem *)data->mmio_base + INPUT_REG_OFFSET,
+                data->input_buffer, INPUT_BUFFER_SIZE);
+
     return len;
 }
 
@@ -77,9 +136,12 @@ int lfa_register_device(struct platform_device *pdev) {
         return -ENOMEM;
     }
     atomic_set(&device_data->open_count, 0);
+    device_data->input_buffer = NULL;
+    device_data->output_buffer = NULL;
     device_data->mmio_base = NULL;
     device_data->dev_num = 0;
     device_data->minor = -1;
+    device_data->state = LFA_STATE_IDLE;
 
     /* Get MMIO resource and map it:
      * This maps the physical address range of the device into the kernel's

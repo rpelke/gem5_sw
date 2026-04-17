@@ -7,10 +7,6 @@
 #include <linux/kdev_t.h>
 #include <linux/platform_device.h>
 
-#define INPUT_REG_OFFSET 0x10
-#define OUTPUT_REG_OFFSET 0x20
-#define INPUT_BUFFER_SIZE (4 * sizeof(int32_t))
-#define OUTPUT_BUFFER_SIZE (4 * sizeof(int32_t))
 
 int lfa_register_device(struct platform_device *pdev);
 void lfa_unregister_device(struct platform_device *pdev);

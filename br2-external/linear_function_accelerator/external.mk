@@ -2,9 +2,21 @@ LINEAR_FUNCTION_ACCELERATOR_VERSION = 1.0
 LINEAR_FUNCTION_ACCELERATOR_SITE = $(BR2_EXTERNAL_LINEAR_FUNCTION_ACCELERATOR_PATH)
 LINEAR_FUNCTION_ACCELERATOR_SITE_METHOD = local
 
-
 LINEAR_FUNCTION_ACCELERATOR_LICENSE = GPL-2.0
 LINEAR_FUNCTION_ACCELERATOR_LICENSE_FILES = LICENSE
+
+# Expose header file lfa.h to other packages
+LINEAR_FUNCTION_ACCELERATOR_INSTALL_STAGING = YES
+
+# Install header in staging area (buildroot)
+define LINEAR_FUNCTION_ACCELERATOR_INSTALL_STAGING_CMDS
+	$(INSTALL) -D -m 0644 $(@D)/inc/lfa.h $(STAGING_DIR)/usr/include/lfa.h
+endef
+
+# Install header in target rootfs
+define LINEAR_FUNCTION_ACCELERATOR_INSTALL_TARGET_CMDS
+	$(INSTALL) -D -m 0644 $(@D)/inc/lfa.h $(TARGET_DIR)/usr/include/lfa.h
+endef
 
 $(eval $(kernel-module))
 $(eval $(generic-package))

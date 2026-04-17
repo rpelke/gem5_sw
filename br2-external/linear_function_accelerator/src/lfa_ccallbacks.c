@@ -1,5 +1,6 @@
 #include "lfa_ccallbacks.h"
-#include "lfa_device.h"
+#include "lfa_accelerator.h"
+#include "lfa_global.h"
 
 #include <linux/atomic.h>
 #include <linux/errno.h>

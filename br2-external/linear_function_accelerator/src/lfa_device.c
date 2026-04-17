@@ -1,5 +1,8 @@
 #include "lfa_device.h"
+#include "lfa_accelerator.h"
 #include "lfa_ccallbacks.h"
+#include "lfa_global.h"
+#include "lfa_ioctl.h"
 
 #include <linux/device.h>
 #include <linux/errno.h>
@@ -31,6 +34,7 @@ static const struct file_operations lfa_fops = {
     .read = lfa_read,
     .write = lfa_write,
     .open = lfa_open,
+    .unlocked_ioctl = lfa_ioctl,
     .release = lfa_release,
 };
 

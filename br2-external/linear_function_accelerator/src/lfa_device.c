@@ -57,6 +57,7 @@ int lfa_register_device(struct platform_device *pdev) {
     device_data->mmio_base = NULL;
     device_data->dev_num = 0;
     device_data->minor = -1;
+    device_data->irq = -1;
     device_data->state = LFA_STATE_IDLE;
 
     /* Get MMIO resource and map it:

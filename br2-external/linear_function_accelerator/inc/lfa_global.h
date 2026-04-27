@@ -16,6 +16,7 @@ struct lfa_device_data {
     struct cdev lfa_cdev;
     dev_t dev_num;
     int minor;
+    int irq;
     atomic_t open_count;
     void *input_buffer;
     void *output_buffer;

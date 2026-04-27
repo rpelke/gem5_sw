@@ -60,11 +60,7 @@ ssize_t lfa_read(struct file *filp, char __user *buf, size_t len, loff_t *off) {
         return -EINVAL;
     }
 
-    /* Copy data from device to output buffer */
     struct lfa_device_data *data = filp->private_data;
-    memcpy_fromio(data->output_buffer,
-                  (u8 __iomem *)data->mmio_base + OUTPUT_REG_OFFSET,
-                  OUTPUT_BUFFER_SIZE);
 
     /* Copy data from kernel space to user space */
     if (copy_to_user(buf, data->output_buffer, len)) {
